@@ -1,1 +1,38 @@
-yaml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-config
+  namespace: default
+data:
+  # Change this value to your actual MongoDB connection string
+  MONGODB_URI: "mongodb://username:password@mongo-server:27017"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasky
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tasky
+  template:
+    metadata:
+      labels:
+        app: tasky
+    spec:
+      containers:
+        - name: tasky
+          image: ghcr.io/cremerfc/tasky:latest
+          imagePullPolicy: Always
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-config
+                  key: MONGODB_URI
+          ports:
+            - containerPort: 8080
+
